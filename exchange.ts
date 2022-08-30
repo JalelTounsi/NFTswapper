@@ -19,9 +19,8 @@ import { Web3Provider } from '@etherproject/providers';
 import { NftSwapV4 } from '@traderxyz/nft-swap-sdk';
 
 const providerForMaker = new Web3Provider(window.ethereum);
-const providerForTaker = new Web3Provider(window.ethereum);
-const signerForMaker = providerForMaker.getSigner();
-const signerForTaker = providerForTaker.getSigner();
+const signerForMaker = provider.getSigner();
+const signerForTaker = provider.getSigner();
 const CHAIN_ID = 1;
 
 // 0 - constants
@@ -42,13 +41,14 @@ const ONE_THOUSAND_USDC = {
 //  1 - the maker (NFT Owner) creates the order
 //  Initiate SDK fro Maker
 const nftSwapSdkMaker = new NftSwapV4(
-    providerForMaker, 
+    provider, 
     signerForMaker, 
     CHAIN_ID
     );
 
 const WalletAddressMaker = '0x123bA...';
 const WalletAddressTaker = '0x987xy...';
+
 //  Approve NFT to trade (if required)
 await nftSwapSdkMaker.approveTokenOrNftByAsset(
     NFTCOOLCAT,
@@ -64,12 +64,12 @@ const order = nftSwapSdkMaker.buildOrder(
 
 //  2 - maker signs the order
 //  the maker signs the order so the order is fillable
-const signedOrder = await nftSwapSdkMaker.signOrder(order, WalletAddressTaker);
+const signedOrder = await nftSwapSdkMaker.signOrder(order);
 
 //  the taker part
 // the taker accepts and fills the order from maker to complete the trade
 const nftSwapSdkTaker = new NftSwapV4(
-    providerForTaker, 
+    provider, 
     signerForTaker, 
     CHAIN_ID
     );
@@ -82,7 +82,7 @@ await nftSwapSdkTaker.approveTokenOrNftByAsset(
 
 //  the taker approves the trade transaction. it's submitted on the blockchain for settlement
 const fillTx = await nftSwapSdkTaker.fillSignedOrder(signedOrder);
-const fillTxReceipt = await nftSwapSdkTaker.awaitTransactionHash(fillTx.hash);
+const fillTxReceipt = await nftSwapSdkTaker.awaitTransactionHash(fillTx);
 console.log(`order filled at TxHash: ${fillTxReceipt.transactionHash}`);
 
 
